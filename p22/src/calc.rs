@@ -44,11 +44,9 @@ pub fn fibonacci_loop(n: u32) -> u64 {
 /// assert_eq!(fib, 55);
 /// ```
 pub fn fibonacci_rec(n: u32) -> u64 {
-    if n == 0 {
-        0
-    } else if n == 1 {
-        1
-    } else {
-        fibonacci_rec(n - 1) + fibonacci_rec(n - 2)
+    match n {
+        0 => 0,
+        1 => 1,
+        _ => fibonacci_rec(n - 1) + fibonacci_rec(n - 2),
     }
 }
