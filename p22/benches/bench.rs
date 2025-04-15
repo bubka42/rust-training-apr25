@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 use p22::calc;
-use test::{Bencher, black_box};
+use test::{black_box, Bencher};
 
 #[bench]
 fn bench_fibonacci_loop(b: &mut Bencher) {

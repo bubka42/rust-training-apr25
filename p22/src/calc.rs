@@ -1,4 +1,4 @@
-/// This is a simple calculator program in Rust that performs various calculations.
+// This is a simple calculator program in Rust that performs various calculations.
 
 /// Celsius to Fahrenheit.
 /// ```
