@@ -6,7 +6,7 @@ pub struct Point {
 
 #[derive(Clone, Debug, Copy, Default)]
 pub struct Circle {
-    pub _center: Point,
+    pub center: Point,
     pub radius: f32,
 }
 
@@ -48,7 +48,7 @@ pub fn point_area(_point: Point) -> f32 {
 /// use p22::figures::Circle;
 /// use p22::figures::circle_area;
 /// let circle = Circle {
-///     _center: Point { x: 0.0, y: 0.0 },
+///     center: Point { x: 0.0, y: 0.0 },
 ///     radius: 1.0,
 /// };
 /// assert_eq!(circle_area(circle), std::f32::consts::PI);
@@ -109,7 +109,7 @@ pub fn rectangle_area(rectangle: Rectangle) -> f32 {
 /// use p22::figures::area;
 /// let point = Shape::Point(Point { x: 0.0, y: 0.0 });
 /// let circle = Shape::Circle(Circle {
-///    _center: Point { x: 0.0, y: 0.0 },
+///    center: Point { x: 0.0, y: 0.0 },
 ///    radius: 1.0,
 /// });
 /// let triangle = Shape::Triangle(Triangle {
@@ -152,7 +152,7 @@ pub fn point_perimeter(_point: Point) -> f32 {
 /// use p22::figures::Circle;
 /// use p22::figures::circle_perimeter;
 /// let circle = Circle {
-///     _center: Point { x: 0.0, y: 0.0 },
+///     center: Point { x: 0.0, y: 0.0 },
 ///     radius: 1.0,
 /// };
 /// assert_eq!(circle_perimeter(circle), 2.0 * std::f32::consts::PI);
@@ -212,7 +212,7 @@ pub fn rectangle_perimeter(rectangle: Rectangle) -> f32 {
 /// use p22::figures::perimeter;
 /// let point = Shape::Point(Point { x: 0.0, y: 0.0 });
 /// let circle = Shape::Circle(Circle {
-///   _center: Point { x: 0.0, y: 0.0 },
+///   center: Point { x: 0.0, y: 0.0 },
 ///   radius: 1.0,
 /// });
 /// let triangle = Shape::Triangle(Triangle {
@@ -251,7 +251,7 @@ mod tests {
     #[test]
     fn test_circle_area() {
         let circle = Shape::Circle(Circle {
-            _center: Point { x: 0.0, y: 0.0 },
+            center: Point { x: 0.0, y: 0.0 },
             radius: 1.0,
         });
         assert_eq!(area(circle), std::f32::consts::PI);
@@ -280,7 +280,7 @@ mod tests {
     fn test_area() {
         let point = Shape::Point(Point { x: 0.0, y: 0.0 });
         let circle = Shape::Circle(Circle {
-            _center: Point { x: 0.0, y: 0.0 },
+            center: Point { x: 0.0, y: 0.0 },
             radius: 1.0,
         });
         let triangle = Shape::Triangle(Triangle {

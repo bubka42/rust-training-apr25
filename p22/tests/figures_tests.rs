@@ -14,7 +14,7 @@ fn test_point_perimeter() {
 fn test_circle_perimeter() {
     // Test the perimeter of a circle
     let circle = Circle {
-        _center: Point { x: 0.0, y: 0.0 },
+        center: Point { x: 0.0, y: 0.0 },
         radius: 1.0,
     };
     let perimeter = figures::circle_perimeter(circle);
@@ -49,7 +49,7 @@ fn test_perimeter() {
     // Test the perimeter function with different shapes
     let point = Shape::Point(Point { x: 0.0, y: 0.0 });
     let circle = Shape::Circle(Circle {
-        _center: Point { x: 0.0, y: 0.0 },
+        center: Point { x: 0.0, y: 0.0 },
         radius: 1.0,
     });
     let triangle = Shape::Triangle(Triangle {
