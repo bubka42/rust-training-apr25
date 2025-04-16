@@ -41,8 +41,8 @@ mod tests {
     #[test]
     fn test_f1() {
         let mut pair = (1, 2);
-        assert_eq!(*f1(&mut pair, true), 1);
-        *f1(&mut pair, false) = 3;
+        assert_eq!(*f1(&mut pair, false), 1);
+        *f1(&mut pair, true) = 3;
         assert_eq!(pair, (1, 3));
     }
 
