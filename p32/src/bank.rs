@@ -75,27 +75,29 @@ impl Bank {
             return Err("Insufficient credit limit".to_string());
         }
 
-        let from_mut = self.get_user_mut(from_user).ok_or("From user not found")?;
-        from_mut.balance -= amount as i64;
         let to_mut = self.get_user_mut(to_user).ok_or("To user not found")?;
         to_mut.balance += amount as i64;
+        let from_mut = self
+            .get_user_mut(from_user)
+            .ok_or("This should not be reached")?;
+        from_mut.balance -= amount as i64;
 
         Ok(())
     }
 
-    /// Accrues interest on the user's balance.
-    pub fn accreue_interest(&mut self, user_name: &str) -> Result<(), String> {
-        let credit_interest_rate = self.credit_interest as f64 / 100.0;
-        let debit_interest_rate = self.debit_interest as f64 / 100.0;
-        let user = self.get_user_mut(user_name).ok_or("User not found")?;
-
-        if user.balance > 0 {
-            user.balance += (user.balance as f64 * credit_interest_rate) as i64;
-        } else {
-            user.balance -= (user.balance as f64 * debit_interest_rate) as i64;
+    /// Accrues interest on the user balances.
+    pub fn accrue_interest(&mut self) {
+        let credit_interest = self.credit_interest;
+        let debit_interest = self.debit_interest;
+        let mut interest: i64;
+        for user in &mut self.users {
+            if user.balance > 0 {
+                interest = credit_interest as i64;
+            } else {
+                interest = debit_interest as i64;
+            }
+            user.balance += user.balance * interest / 100;
         }
-
-        Ok(())
     }
 
     /// Merges two banks into one.
