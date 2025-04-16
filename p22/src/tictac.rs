@@ -44,63 +44,21 @@ impl std::fmt::Display for Error {
 pub fn analyze(field: &TicTacField) -> GameState {
     let mut win_x = false;
     let mut win_y = false;
-    let mut win_x_line: bool;
-    let mut win_y_line;
     // Check rows
     for i in 0..3 {
-        win_x_line = true;
-        win_y_line = true;
-        for j in 0..3 {
-            if field.board[i][j] != Some(Player::X) {
-                win_x_line = false;
-            }
-            if field.board[i][j] != Some(Player::O) {
-                win_y_line = false;
-            }
-        }
-        win_x |= win_x_line;
-        win_y |= win_y_line;
+        win_x |= field.board[i] == [Some(Player::X); 3];
+        win_y |= field.board[i] == [Some(Player::O); 3];
     }
     // Check columns
     for j in 0..3 {
-        win_x_line = true;
-        win_y_line = true;
-        for i in 0..3 {
-            if field.board[i][j] != Some(Player::X) {
-                win_x_line = false;
-            }
-            if field.board[i][j] != Some(Player::O) {
-                win_y_line = false;
-            }
-        }
-        win_x |= win_x_line;
-        win_y |= win_y_line;
+        win_x |= [field.board[0][j], field.board[1][j], field.board[2][j]] == [Some(Player::X); 3];
+        win_y |= [field.board[0][j], field.board[1][j], field.board[2][j]] == [Some(Player::O); 3];
     }
     // Check diagonals
-    win_x_line = true;
-    win_y_line = true;
-    for i in 0..3 {
-        if field.board[i][i] != Some(Player::X) {
-            win_x_line = false;
-        }
-        if field.board[i][i] != Some(Player::O) {
-            win_y_line = false;
-        }
-    }
-    win_x |= win_x_line;
-    win_y |= win_y_line;
-    win_x_line = true;
-    win_y_line = true;
-    for i in 0..3 {
-        if field.board[i][2 - i] != Some(Player::X) {
-            win_x_line = false;
-        }
-        if field.board[i][2 - i] != Some(Player::O) {
-            win_y_line = false;
-        }
-    }
-    win_x |= win_x_line;
-    win_y |= win_y_line;
+    win_x |= [field.board[0][0], field.board[1][1], field.board[2][2]] == [Some(Player::X); 3];
+    win_y |= [field.board[0][0], field.board[1][1], field.board[2][2]] == [Some(Player::O); 3];
+    win_x |= [field.board[0][2], field.board[1][1], field.board[2][0]] == [Some(Player::X); 3];
+    win_y |= [field.board[0][2], field.board[1][1], field.board[2][0]] == [Some(Player::O); 3];
     if win_x && win_y {
         GameState::WinBoth
     } else if win_x {
