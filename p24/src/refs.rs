@@ -8,9 +8,6 @@ pub fn f1(pair: &mut (u32, u32), flag: bool) -> &mut u32 {
 
 // f2 returns n-th element of slice.
 pub fn f2(slice: &mut [u32], n: usize) -> &mut u32 {
-    if n >= slice.len() {
-        panic!("Index out of bounds");
-    }
     &mut slice[n]
 }
 
