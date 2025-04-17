@@ -13,10 +13,7 @@ pub trait Shape {
     fn area(&self) -> f32;
     fn scale(&mut self, factor: f32);
     fn area_to_perimeter(&self) -> f32 {
-        match self.perimeter() {
-            0.0 => 0.0,
-            _ => self.area() / self.perimeter(),
-        }
+        self.area() / self.perimeter()
     }
     fn biggest_shape<'a, 'b, T: Shape>(&'a self, other: &'b T) -> Choice<&'a Self, &'b T> {
         if self.area() > other.area() {
@@ -73,6 +70,10 @@ impl Shape for Point {
     }
 
     fn area(&self) -> f32 {
+        0.0
+    }
+
+    fn area_to_perimeter(&self) -> f32 {
         0.0
     }
 
