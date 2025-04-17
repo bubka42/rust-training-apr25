@@ -127,6 +127,34 @@ impl BigUInt4096 {
         (result, overflow)
     }
 
+    pub fn widening_shl(&self, shift_in_bits: usize) -> (Self, Self) {
+        let mut result;
+        let mut overflow;
+        let mut carry: u64 = 0;
+        let mut temp: u64;
+
+        let shift_in_blocks = shift_in_bits / 64;
+        let shift_in_bits = shift_in_bits % 64;
+
+        (result, overflow) = self.overflowing_shift_left(shift_in_blocks);
+
+        for i in 0..64 {
+            temp = carry;
+            carry = result.data[i] >> (64 - shift_in_bits);
+            result.data[i] <<= shift_in_bits;
+            result.data[i] |= temp;
+        }
+        carry = 0;
+        for i in 0..64 {
+            temp = carry;
+            carry = overflow.data[i] >> (64 - shift_in_bits);
+            overflow.data[i] <<= shift_in_bits;
+            overflow.data[i] |= temp;
+        }
+
+        (result, overflow)
+    }
+
     fn from_u64_shifted(block: u64, shift_in_blocks: usize) -> Self {
         let mut result = BigUInt4096::new();
         result.data[shift_in_blocks] = block;
@@ -185,19 +213,19 @@ impl BigUInt4096 {
 
 impl FromStr for BigUInt4096 {
     type Err = std::num::ParseIntError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.is_empty() {
+    fn from_str(hex_str: &str) -> Result<Self, Self::Err> {
+        if hex_str.is_empty() {
             return Ok(BigUInt4096::default());
         }
         let mut result = BigUInt4096::new();
-        let bytes = s.as_bytes();
-        let len = bytes.len();
-
-        for i in 0..len {
-            let byte = bytes[len - 1 - i];
-            result.data[i / 8] |= (byte as u64) << (8 * (i % 8));
+        let hex_str = hex_str.trim_start_matches("0x");
+        let hex_str = format!("{:0>64}", hex_str);
+        for i in 0..64 {
+            let start = hex_str.len() - (i + 1) * 16;
+            let end = hex_str.len() - i * 16;
+            let block_str = &hex_str[start..end];
+            result.data[i] = u64::from_str_radix(block_str, 16)?;
         }
-
         Ok(result)
     }
 }
@@ -205,7 +233,31 @@ impl FromStr for BigUInt4096 {
 impl Add for BigUInt4096 {
     type Output = Self;
 
-    fn add(self, other: Self) -> Self {
+    fn add(self, other: Self) -> Self::Output {
+        self.wrapping_add(&other)
+    }
+}
+
+impl Add<&Self> for BigUInt4096 {
+    type Output = Self;
+
+    fn add(self, other: &Self) -> Self::Output {
+        self.wrapping_add(other)
+    }
+}
+
+impl Add for &BigUInt4096 {
+    type Output = BigUInt4096;
+
+    fn add(self, other: Self) -> Self::Output {
+        self.wrapping_add(other)
+    }
+}
+
+impl Add<BigUInt4096> for &BigUInt4096 {
+    type Output = BigUInt4096;
+
+    fn add(self, other: BigUInt4096) -> Self::Output {
         self.wrapping_add(&other)
     }
 }
@@ -216,10 +268,40 @@ impl AddAssign for BigUInt4096 {
     }
 }
 
+impl AddAssign<&Self> for BigUInt4096 {
+    fn add_assign(&mut self, other: &Self) {
+        *self = *self + *other;
+    }
+}
+
 impl Sub for BigUInt4096 {
     type Output = Self;
 
-    fn sub(self, other: Self) -> Self {
+    fn sub(self, other: Self) -> Self::Output {
+        self.wrapping_sub(&other)
+    }
+}
+
+impl Sub<&Self> for BigUInt4096 {
+    type Output = Self;
+
+    fn sub(self, other: &Self) -> Self::Output {
+        self.wrapping_sub(other)
+    }
+}
+
+impl Sub for &BigUInt4096 {
+    type Output = BigUInt4096;
+
+    fn sub(self, other: Self) -> Self::Output {
+        self.wrapping_sub(other)
+    }
+}
+
+impl Sub<BigUInt4096> for &BigUInt4096 {
+    type Output = BigUInt4096;
+
+    fn sub(self, other: BigUInt4096) -> Self::Output {
         self.wrapping_sub(&other)
     }
 }
@@ -230,10 +312,40 @@ impl SubAssign for BigUInt4096 {
     }
 }
 
+impl SubAssign<&Self> for BigUInt4096 {
+    fn sub_assign(&mut self, other: &Self) {
+        *self = *self - *other;
+    }
+}
+
 impl Mul for BigUInt4096 {
     type Output = Self;
 
-    fn mul(self, other: Self) -> Self {
+    fn mul(self, other: Self) -> Self::Output {
+        self.wrapping_mul(&other)
+    }
+}
+
+impl Mul<&Self> for BigUInt4096 {
+    type Output = Self;
+
+    fn mul(self, other: &Self) -> Self::Output {
+        self.wrapping_mul(other)
+    }
+}
+
+impl Mul for &BigUInt4096 {
+    type Output = BigUInt4096;
+
+    fn mul(self, other: Self) -> Self::Output {
+        self.wrapping_mul(other)
+    }
+}
+
+impl Mul<BigUInt4096> for &BigUInt4096 {
+    type Output = BigUInt4096;
+
+    fn mul(self, other: BigUInt4096) -> Self::Output {
         self.wrapping_mul(&other)
     }
 }
@@ -241,5 +353,21 @@ impl Mul for BigUInt4096 {
 impl MulAssign for BigUInt4096 {
     fn mul_assign(&mut self, other: Self) {
         *self = *self * other;
+    }
+}
+
+impl MulAssign<&Self> for BigUInt4096 {
+    fn mul_assign(&mut self, other: &Self) {
+        *self = *self * *other;
+    }
+}
+
+impl std::fmt::Display for BigUInt4096 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut hex_str = String::new();
+        for i in (0..64).rev() {
+            hex_str.push_str(&format!("{:016x}", self.data[i]));
+        }
+        write!(f, "0x{}", hex_str)
     }
 }
