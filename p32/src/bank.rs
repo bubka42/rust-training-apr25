@@ -55,7 +55,7 @@ impl Bank {
             if user.balance > 0 {
                 total_assets += user.balance;
             } else {
-                total_liabilities += user.balance;
+                total_liabilities -= user.balance;
             }
         }
 
@@ -79,7 +79,7 @@ impl Bank {
         to_mut.balance += amount as i64;
         let from_mut = self
             .get_user_mut(from_user)
-            .ok_or("This should not be reached")?;
+            .expect("This should not be reached, because this user was checked earlier");
         from_mut.balance -= amount as i64;
 
         Ok(())
@@ -91,12 +91,12 @@ impl Bank {
         let debit_interest = self.debit_interest;
         let mut interest: i64;
         for user in &mut self.users {
-            if user.balance > 0 {
-                interest = credit_interest as i64;
+            interest = if user.balance > 0 {
+                credit_interest
             } else {
-                interest = debit_interest as i64;
-            }
-            user.balance += user.balance * interest / 100;
+                debit_interest
+            } as i64;
+            user.balance += user.balance * interest / 10000;
         }
     }
 
