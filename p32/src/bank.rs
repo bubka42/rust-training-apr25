@@ -48,18 +48,18 @@ impl Bank {
 
     /// Gets the total assets and total liabilities for the bank.
     pub fn calc_balance(&self) -> (i64, i64) {
-        let mut total_assets = 0;
         let mut total_liabilities = 0;
+        let mut total_assets = 0;
 
         for user in &self.users {
-            if user.balance > 0 {
-                total_assets += user.balance;
+            if user.balance < 0 {
+                total_assets -= user.balance;
             } else {
-                total_liabilities -= user.balance;
+                total_liabilities += user.balance;
             }
         }
 
-        (total_assets, total_liabilities)
+        (total_liabilities, total_assets)
     }
 
     /// Transfers amount from one user to another.
@@ -91,7 +91,7 @@ impl Bank {
         let debit_interest = self.debit_interest;
         let mut interest: i64;
         for user in &mut self.users {
-            interest = if user.balance > 0 {
+            interest = if user.balance < 0 {
                 credit_interest
             } else {
                 debit_interest
