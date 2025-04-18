@@ -29,8 +29,8 @@ static V2: &str = "And a";
 
 #[derive(Debug, Clone, Default, Copy)]
 pub struct SongIter {
-    pub day: usize,
-    pub line: usize,
+    day: usize,
+    line: usize,
 }
 
 impl Iterator for SongIter {
@@ -87,25 +87,23 @@ pub fn numbered_lines() -> impl Iterator<Item = String> {
 }
 
 // generic iterator wrapper to duplicate values N times
-pub struct Repeat<T: Iterator<Item: Clone>> {
-    pub iter: T,
-    pub n: usize,
-    pub i: usize,
-    pub current: Option<T::Item>,
+pub struct Repeat<T: Iterator<Item: Clone>, const N: usize> {
+    iter: T,
+    i: usize,
+    current: Option<T::Item>,
 }
 
-impl<T: Iterator<Item: Clone>> Repeat<T> {
-    pub fn new(iter: T, n: usize) -> Self {
+impl<T: Iterator<Item: Clone>, const N: usize> Repeat<T, N> {
+    pub fn new(iter: T) -> Self {
         Self {
             iter,
-            n,
             i: 0,
             current: None,
         }
     }
 }
 
-impl<T: Iterator<Item: Clone>> Iterator for Repeat<T> {
+impl<T: Iterator<Item: Clone>, const N: usize> Iterator for Repeat<T, N> {
     type Item = T::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -114,7 +112,7 @@ impl<T: Iterator<Item: Clone>> Iterator for Repeat<T> {
         }
         if self.current.is_some() {
             self.i += 1;
-            if self.i == self.n {
+            if self.i == N {
                 self.i = 0;
             }
         }
