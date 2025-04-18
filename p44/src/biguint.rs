@@ -373,7 +373,7 @@ impl<const N: usize> std::fmt::Display for BigUInt<N> {
 
 /// Macro to create BigUInt<N> types from list of (type_name, N) pairs.
 macro_rules! new_biguints {
-    ($($type_name:ident, $N:expr);*) => {
+    ($($type_name:ident, $N:expr);*$(;)?) => {
         $(
             pub type $type_name = BigUInt<$N>;
         )*
@@ -387,5 +387,5 @@ new_biguints! (
     BigUInt1024, 16;
     BigUInt2048, 32;
     BigUInt4096, 64;
-    BigUInt8192, 128
+    BigUInt8192, 128;
 );
