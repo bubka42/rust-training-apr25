@@ -75,7 +75,7 @@ impl Bank {
         to_user: &str,
         amount: u64,
     ) -> Result<(), String> {
-        let from = self.get_user(from_user).expect("From user not found");
+        let from = self.get_user(from_user).ok_or("From user not found")?;
         let amount_i64 = i64::try_from(amount).expect("Unable to convert amount to i64");
 
         if from.balance + i64::try_from(from.credit_line).expect("Unable to convert balance to i64")
@@ -88,7 +88,7 @@ impl Bank {
             .checked_sub(amount_i64)
             .expect("Underflow in balance");
 
-        let to_mut = self.get_user_mut(to_user).expect("To user not found");
+        let to_mut = self.get_user_mut(to_user).ok_or("To user not found")?;
         let to_balance = to_mut
             .balance
             .checked_add(amount_i64)
