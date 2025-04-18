@@ -1,5 +1,5 @@
 use core::panic;
-use std::io::{Read, Write};
+use std::io::{self, Read, Write};
 
 static DAYS: [&str; 12] = [
     "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth",
@@ -128,46 +128,39 @@ pub fn song_to_string(song_iter: impl Iterator<Item = String>) -> String {
     result
 }
 
-pub fn song_to_file(song_iter: impl Iterator<Item = String>, path: &str) {
-    let mut file = std::fs::File::create(path).expect("Unable to create file");
+pub fn song_to_file(song_iter: impl Iterator<Item = String>, path: &str) -> io::Result<()> {
+    let mut file = std::fs::File::create(path)?;
     for line in song_iter {
-        std::io::Write::write_all(&mut file, line.as_bytes()).expect("Unable to write data");
+        std::io::Write::write_all(&mut file, line.as_bytes())?;
     }
+    Ok(())
 }
 
-pub fn song_to_tcp(song_iter: impl Iterator<Item = String>, address: &str) {
-    let mut stream = std::net::TcpStream::connect(address).expect("Unable to connect to server");
+pub fn song_to_tcp(song_iter: impl Iterator<Item = String>, address: &str) -> io::Result<()> {
+    let mut stream = std::net::TcpStream::connect(address)?;
     for line in song_iter {
-        stream
-            .write_all(line.as_bytes())
-            .expect("Unable to write data");
+        stream.write_all(line.as_bytes())?;
     }
+    Ok(())
 }
 
-pub fn song_from_tcp(port: u16) {
+pub fn song_from_tcp(port: u16) -> io::Result<()> {
     let address = format!("0.0.0.0:{}", port);
-    let listener = std::net::TcpListener::bind(&address).expect("Unable to bind to address");
+    let listener = std::net::TcpListener::bind(&address)?;
     println!("Listening on {}", address);
     // lock stdout
     let stdout = std::io::stdout();
     let mut handle = stdout.lock();
     for stream in listener.incoming() {
-        match stream {
-            Ok(mut stream) => {
-                let mut buffer = [0; 1024];
-                loop {
-                    let bytes_read = stream.read(&mut buffer).expect("Unable to read data");
-                    if bytes_read == 0 {
-                        break;
-                    }
-                    handle
-                        .write_all(&buffer[..bytes_read])
-                        .expect("Unable to write data");
-                }
+        let mut stream = stream?;
+        let mut buffer = [0; 1024];
+        loop {
+            let bytes_read = stream.read(&mut buffer)?;
+            if bytes_read == 0 {
+                break;
             }
-            Err(e) => {
-                eprintln!("Error: {}", e);
-            }
+            handle.write_all(&buffer[..bytes_read])?;
         }
     }
+    Ok(())
 }
