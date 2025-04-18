@@ -76,23 +76,23 @@ impl Bank {
         amount: u64,
     ) -> Result<(), String> {
         let from = self.get_user(from_user).ok_or("From user not found")?;
-        let amount_i64 = i64::try_from(amount).expect("Unable to convert amount to i64");
-
-        if from.balance + i64::try_from(from.credit_line).expect("Unable to convert balance to i64")
-            < amount_i64
-        {
+        let amount_i64 = i64::try_from(amount)
+            .map_err(|err| format!("Unable to convert amount to i64: {err}"))?;
+        let credit_line_i64 = i64::try_from(from.credit_line)
+            .map_err(|err| format!("Unable to convert credit line to i64: {err}"))?;
+        if from.balance + credit_line_i64 < amount_i64 {
             return Err("Insufficient credit limit".to_string());
         }
         let from_balance = from
             .balance
             .checked_sub(amount_i64)
-            .expect("Underflow in balance");
+            .ok_or("Underflow in balance")?;
 
         let to_mut = self.get_user_mut(to_user).ok_or("To user not found")?;
         let to_balance = to_mut
             .balance
             .checked_add(amount_i64)
-            .expect("Overflow in balance");
+            .ok_or("Overflow in balance")?;
         to_mut.balance = to_balance;
 
         let from_mut = self
