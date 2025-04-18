@@ -3,7 +3,7 @@
 /// without using rayon, channels, atomics, or scoped threads.
 pub fn map_sum1(v: Vec<u32>, f: impl Fn(u32) -> u64 + Send + Copy + 'static, n: usize) -> u64 {
     let mut threads = Vec::new();
-    let chunk_size = (v.len() + n - 1) / n;
+    let chunk_size = v.len().div_ceil(n);
     let mut results = vec![0; n];
 
     for i in 0..n {
@@ -31,7 +31,7 @@ pub fn map_sum2(v: Vec<u32>, f: impl Fn(u32) -> u64 + Send + Copy + 'static, n: 
     use std::sync::Arc;
 
     let counter = Arc::new(AtomicU64::new(0));
-    let chunk_size = (v.len() + n - 1) / n;
+    let chunk_size = v.len().div_ceil(n);
     let mut threads = Vec::new();
 
     for i in 0..n {
@@ -64,7 +64,7 @@ pub fn map_sum3(v: Vec<u32>, f: impl Fn(u32) -> u64 + Send + Copy + 'static, n: 
     use std::thread;
 
     let (tx, rx) = mpsc::channel();
-    let chunk_size = (v.len() + n - 1) / n;
+    let chunk_size = v.len().div_ceil(n);
     let mut threads = Vec::new();
 
     for i in 0..n {
