@@ -57,13 +57,11 @@ impl Bank {
             if user.balance < 0 {
                 total_assets = total_assets
                     .checked_add(user.balance)
-                    .ok_or("Overflow in total assets")
-                    .unwrap();
+                    .expect("Overflow in total assets");
             } else {
                 total_liabilities = total_liabilities
                     .checked_add(user.balance)
-                    .ok_or("Overflow in total liabilities")
-                    .unwrap();
+                    .expect("Overflow in total liabilities");
             }
         }
 
@@ -77,25 +75,24 @@ impl Bank {
         to_user: &str,
         amount: u64,
     ) -> Result<(), String> {
-        let from = self.get_user(from_user).ok_or("From user not found")?;
+        let from = self.get_user(from_user).expect("From user not found");
+        let amount_i64 = i64::try_from(amount).expect("Unable to convert amount to i64");
 
         if from.balance + i64::try_from(from.credit_line).expect("Unable to convert balance to i64")
-            < i64::try_from(amount).expect("Unable to convert amount to i64")
+            < amount_i64
         {
             return Err("Insufficient credit limit".to_string());
         }
         let from_balance = from
             .balance
-            .checked_sub(i64::try_from(amount).expect("Unable to convert amount to i64"))
-            .ok_or("Underflow in balance")
-            .unwrap();
+            .checked_sub(amount_i64)
+            .expect("Underflow in balance");
 
-        let to_mut = self.get_user_mut(to_user).ok_or("To user not found")?;
+        let to_mut = self.get_user_mut(to_user).expect("To user not found");
         let to_balance = to_mut
             .balance
-            .checked_add(i64::try_from(amount).expect("Unable to convert amount to i64"))
-            .ok_or("Overflow in balance")
-            .unwrap();
+            .checked_add(amount_i64)
+            .expect("Overflow in balance");
         to_mut.balance = to_balance;
 
         let from_mut = self
@@ -108,23 +105,19 @@ impl Bank {
 
     /// Accrues interest on the user balances.
     pub fn accrue_interest(&mut self) {
-        let credit_interest = self.credit_interest;
-        let debit_interest = self.debit_interest;
         for user in self.users.values_mut() {
-            let interest = if user.balance < 0 {
-                credit_interest
+            let interest = i64::try_from(if user.balance < 0 {
+                self.credit_interest
             } else {
-                debit_interest
-            };
+                self.debit_interest
+            })
+            .expect("Unable to convert interest to i64");
             let new_balance = user
                 .balance
-                .checked_add(
-                    user.balance
-                        * i64::try_from(interest).expect("Unable to convert interest to i64")
-                        / 10000,
-                )
-                .ok_or("Overflow/Underflow in balance")
-                .unwrap();
+                .checked_mul(interest)
+                .and_then(|prod| prod.checked_div(10000))
+                .and_then(|to_add| to_add.checked_add(user.balance))
+                .expect("Overflow/Underflow in balance");
             user.balance = new_balance;
         }
     }
@@ -137,14 +130,12 @@ impl Bank {
                 let new_balance = existing_user
                     .balance
                     .checked_add(user.balance)
-                    .ok_or("Overflow in balance")
-                    .unwrap();
+                    .expect("Overflow in balance");
                 existing_user.balance = new_balance;
                 let new_credit_line = existing_user
                     .credit_line
                     .checked_add(user.credit_line)
-                    .ok_or("Overflow in credit line")
-                    .unwrap();
+                    .expect("Overflow in credit line");
                 existing_user.credit_line = new_credit_line;
             } else {
                 self.users.insert(user.name.clone(), user.clone());
