@@ -375,6 +375,13 @@ impl<const N: usize> std::fmt::Display for BigUInt<N> {
 macro_rules! new_biguints {
     ($($type_name:ident, $N:expr);*$(;)?) => {
         $(
+            /// Biguint type
+            /// ```
+            #[doc = concat!("let a = p44::biguint::", stringify!($type_name), "::new();")]
+            #[doc = concat!("let b = p44::biguint::", stringify!($type_name), "::new();")]
+            #[doc = concat!("let c = p44::biguint::", stringify!($type_name), "::new();")]
+            /// assert_eq!(c, a + b);
+            /// ```
             pub type $type_name = BigUInt<$N>;
         )*
     };
