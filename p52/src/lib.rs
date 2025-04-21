@@ -74,11 +74,9 @@ pub fn map_sum3(v: Vec<u32>, f: impl Fn(u32) -> u64 + Send + Copy + 'static, n: 
             break;
         }
         let chunk = v[start..end].to_vec();
-        let tx_clone = tx.clone();
+        let tx_clone: mpsc::Sender<u64> = tx.clone();
         threads.push(thread::spawn(move || {
-            for &x in &chunk {
-                tx_clone.send(f(x)).unwrap();
-            }
+            tx_clone.send(chunk.into_iter().map(&f).sum()).unwrap();
         }));
     }
 
@@ -102,9 +100,42 @@ pub fn map_sum3(v: Vec<u32>, f: impl Fn(u32) -> u64 + Send + Copy + 'static, n: 
 pub fn map_sum4(
     v: Vec<u32>,
     f: impl Fn(u32) -> u64 + Send + Sync + Copy + 'static,
-    _n: usize,
+    n: usize,
 ) -> u64 {
     use rayon::prelude::*;
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(n)
+        .build_global()
+        .unwrap();
 
     v.into_par_iter().map(f).sum()
+}
+
+/// This function takes a mutable slice of u32s and a function f: u32 -> u32,
+/// maps f to the slice and writes the results in the input buffer,
+/// and computes the sum using N scoped threads.
+pub fn map_sum5(
+    v: &mut [u32],
+    f: impl Fn(u32) -> u32 + Send + Copy + Sync + 'static,
+    n: usize,
+) -> u32 {
+    use std::sync::atomic::{AtomicU32, Ordering};
+    use std::sync::Arc;
+    use std::thread;
+
+    let counter = Arc::new(AtomicU32::new(0));
+    let chunk_size = v.len().div_ceil(n);
+
+    thread::scope(|s| {
+        for chunk in v.chunks_mut(chunk_size) {
+            let counter_clone = Arc::clone(&counter);
+            s.spawn(move || {
+                for x in chunk.iter_mut() {
+                    *x = f(*x);
+                    counter_clone.fetch_add(*x, Ordering::SeqCst);
+                }
+            });
+        }
+    });
+    counter.load(Ordering::SeqCst)
 }
