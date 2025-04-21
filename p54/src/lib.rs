@@ -152,7 +152,8 @@ pub unsafe fn decrypt8(keys: &[__m128i; 11], blocks: &[u8; 128]) -> [u8; 128] {
         state = _mm_xor_si128(state, keys[10]);
         // Perform 9 rounds of AES decryption
         for key in keys.iter().rev().skip(1).take(9) {
-            state = _mm_aesdec_si128(state, *key);
+            let rk = _mm_aesimc_si128(*key);
+            state = _mm_aesdec_si128(state, rk);
         }
         // Perform the final round of AES decryption
         state = _mm_aesdeclast_si128(state, keys[0]);
@@ -199,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    fn test_aes_enc1() {
+    fn test_encrypt1_1() {
         let key = hex!("80000000000000000000000000000000");
         let plaintext = hex!("00000000000000000000000000000000");
         let expected_ciphertext = hex!("0edd33d3c621e546455bd8ba1418bec8");
@@ -211,7 +212,7 @@ mod tests {
     }
 
     #[test]
-    fn test_aes_enc2() {
+    fn test_encrypt1_2() {
         let key = hex!("c0000000000000000000000000000000");
         let plaintext = hex!("00000000000000000000000000000000");
         let expected_ciphertext = hex!("4bc3f883450c113c64ca42e1112a9e87");
@@ -223,7 +224,19 @@ mod tests {
     }
 
     #[test]
-    fn test_aes_dec() {
+    fn test_decrypt1_1() {
+        let key = hex!("80000000000000000000000000000000");
+        let ciphertext = hex!("0edd33d3c621e546455bd8ba1418bec8");
+        let expected_plaintext = hex!("00000000000000000000000000000000");
+        unsafe {
+            let round_keys = expand_key(&key);
+            let plaintext = decrypt1(&round_keys, &ciphertext);
+            assert_eq!(plaintext, expected_plaintext);
+        }
+    }
+
+    #[test]
+    fn test_decrypt1_2() {
         let key = hex!("c0000000000000000000000000000000");
         let ciphertext = hex!("4bc3f883450c113c64ca42e1112a9e87");
         let expected_plaintext = hex!("00000000000000000000000000000000");
@@ -232,5 +245,49 @@ mod tests {
             let plaintext = decrypt1(&round_keys, &ciphertext);
             assert_eq!(plaintext, expected_plaintext);
         }
+    }
+
+    #[test]
+    fn test_encrypt8() {
+        let key = hex!("0edd33d3c621e546455bd8ba1418bec8");
+        let round_keys = unsafe { expand_key(&key) };
+        let plaintext8 = hex!(
+            "
+            00000000000000000000000000000000
+            01010101010101010101010101010101
+            02020202020202020202020202020202
+            03030303030303030303030303030303
+            04040404040404040404040404040404
+            05050505050505050505050505050505
+            06060606060606060606060606060606
+            07070707070707070707070707070707
+            "
+        );
+        let plaintext1 = hex!("01010101010101010101010101010101");
+        let ciphertext8 = unsafe { encrypt8(&round_keys, &plaintext8) };
+        let ciphertext1 = unsafe { encrypt1(&round_keys, &plaintext1) };
+        assert_eq!(ciphertext8[16..32], ciphertext1);
+    }
+
+    #[test]
+    fn test_decrypt8() {
+        let key = hex!("4bc3f883450c113c64ca42e1112a9e87");
+        let round_keys = unsafe { expand_key(&key) };
+        let ciphertext8 = hex!(
+            "
+            00000000000000000000000000000000
+            01010101010101010101010101010101
+            02020202020202020202020202020202
+            03030303030303030303030303030303
+            04040404040404040404040404040404
+            05050505050505050505050505050505
+            06060606060606060606060606060606
+            07070707070707070707070707070707
+            "
+        );
+        let ciphertext1 = hex!("01010101010101010101010101010101");
+        let plaintext8 = unsafe { encrypt8(&round_keys, &ciphertext8) };
+        let plaintext1 = unsafe { encrypt1(&round_keys, &ciphertext1) };
+        assert_eq!(plaintext8[16..32], plaintext1);
     }
 }
