@@ -1,0 +1,10 @@
+[package]
+name = "libminiaes"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "miniaes"
+crate-type = ["cdylib"]
+
+[dependencies]
