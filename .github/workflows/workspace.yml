@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_INCREMENTAL: 0
-  RUSTFLAGS: "-Dwarnings"
+  RUSTFLAGS: "-Dwarnings -L target/debug/"
   RUSTDOCFLAGS: "-Dwarnings"
 
 jobs:
