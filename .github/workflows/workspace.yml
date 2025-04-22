@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_INCREMENTAL: 0
-  RUSTFLAGS: "-Dwarnings"
+  RUSTFLAGS: "-Dwarnings -L target/debug/"
   RUSTDOCFLAGS: "-Dwarnings"
 
 jobs:
@@ -20,6 +20,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly
+      - run: cargo build -p libminiaes
       - run: cargo test --all --all-features --tests
 
   clippy:
