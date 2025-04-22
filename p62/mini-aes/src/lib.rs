@@ -7,23 +7,19 @@ pub struct AESWrapper {
 
 impl Default for AESWrapper {
     fn default() -> Self {
-        Self::new()
+        Self::new(&[0u8; 16])
     }
 }
 
 impl AESWrapper {
-    pub fn new() -> Self {
-        Self {
-            keys: unsafe { MaybeUninit::zeroed().assume_init() },
-        }
-    }
-
-    pub fn from_key(key: &[u8; 16]) -> Self {
-        let mut keys = Self::new();
+    pub fn new(key: &[u8; 16]) -> Self {
+        let mut keys = MaybeUninit::uninit();
         unsafe {
-            sys::expand_key(key, &mut keys.keys);
+            sys::expand_key(key, keys.as_mut_ptr());
+            Self {
+                keys: keys.assume_init(),
+            }
         }
-        keys
     }
 
     pub fn encrypt1(&self, input: &[u8; 16], output: &mut [u8; 16]) {
