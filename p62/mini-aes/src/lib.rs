@@ -5,12 +5,6 @@ pub struct AESWrapper {
     keys: sys::RoundKeys,
 }
 
-impl Default for AESWrapper {
-    fn default() -> Self {
-        Self::new(&[0u8; 16])
-    }
-}
-
 impl AESWrapper {
     pub fn new(key: &[u8; 16]) -> Self {
         let mut keys = MaybeUninit::uninit();
