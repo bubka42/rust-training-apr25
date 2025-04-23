@@ -47,9 +47,9 @@ fn main() {
     let output_path = &args[3];
     let mut key = [0u8; 32];
     base16ct::mixed::decode(&args[4], &mut key).unwrap();
-    let nonce = Aes128SivAead::generate_nonce(&mut OsRng);
     match args[1].as_str() {
         "enc" => {
+            let nonce = Aes128SivAead::generate_nonce(&mut OsRng);
             let plaintext = std::fs::read(input_path).expect("Failed to read input file");
             let ciphertext = aes128siv_encrypt(&key, nonce, &plaintext);
             // Open output file for writing
@@ -63,6 +63,7 @@ fn main() {
                 .expect("Failed to write ciphertext");
         }
         "encipd" => {
+            let nonce = Aes128SivAead::generate_nonce(&mut OsRng);
             // Open input file for reading
             let mut input_file =
                 std::fs::File::open(input_path).expect("Failed to open input file");
