@@ -50,7 +50,7 @@ fn shake_256(input_string: &str, output_size: usize) -> String {
 fn main() {
     // Get the input string from command line arguments
     let args: Vec<String> = std::env::args().collect();
-    if args.len() != 2 {
+    if args.len() < 2 {
         eprintln!("Usage: {} <input_string>", args[0]);
         std::process::exit(1);
     }
