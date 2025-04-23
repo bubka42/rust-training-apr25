@@ -1,32 +1,32 @@
 use sha2::{Digest, Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
 fn sha_224(input_string: &str) -> String {
-    let result = Sha224::digest(input_string.as_bytes());
+    let result = Sha224::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_256(input_string: &str) -> String {
-    let result = Sha256::digest(input_string.as_bytes());
+    let result = Sha256::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_384(input_string: &str) -> String {
-    let result = Sha384::digest(input_string.as_bytes());
+    let result = Sha384::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_512(input_string: &str) -> String {
-    let result = Sha512::digest(input_string.as_bytes());
+    let result = Sha512::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_512_224(input_string: &str) -> String {
-    let result = Sha512_224::digest(input_string.as_bytes());
+    let result = Sha512_224::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_512_256(input_string: &str) -> String {
-    let result = Sha512_256::digest(input_string.as_bytes());
+    let result = Sha512_256::digest(input_string);
     format!("{:x}", result)
 }
 

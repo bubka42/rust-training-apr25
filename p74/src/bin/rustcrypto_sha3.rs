@@ -2,30 +2,22 @@ use base16ct::lower::encode_string;
 use sha3::{Digest, Sha3_224, Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256};
 
 fn sha_224(input_string: &str) -> String {
-    let mut hasher = Sha3_224::new();
-    hasher.update(input_string.as_bytes());
-    let result = hasher.finalize();
+    let result = Sha3_224::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_256(input_string: &str) -> String {
-    let mut hasher = Sha3_256::new();
-    hasher.update(input_string.as_bytes());
-    let result = hasher.finalize();
+    let result = Sha3_256::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_384(input_string: &str) -> String {
-    let mut hasher = Sha3_384::new();
-    hasher.update(input_string.as_bytes());
-    let result = hasher.finalize();
+    let result = Sha3_384::digest(input_string);
     format!("{:x}", result)
 }
 
 fn sha_512(input_string: &str) -> String {
-    let mut hasher = Sha3_512::new();
-    hasher.update(input_string.as_bytes());
-    let result = hasher.finalize();
+    let result = Sha3_512::digest(input_string);
     format!("{:x}", result)
 }
 
