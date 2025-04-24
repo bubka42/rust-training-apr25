@@ -3,6 +3,7 @@ use aes::{
     Aes128,
 };
 use cmac::{digest::CtOutput, Cmac, Mac};
+use generic_array::GenericArray;
 use std::io::{Read, Write};
 
 type Aes128Ctr64LE = ctr::Ctr64LE<Aes128>;
@@ -12,13 +13,23 @@ const IV_SIZE: usize = 16; // AES-128 IV size in bytes
 const TAG_SIZE: usize = 16; // CMAC tag size in bytes
 
 fn cmac_tag(key: &[u8; KEY_SIZE], data: &[u8]) -> CtOutput<Cmac<Aes128>> {
-    let mut cmac = Cmac::<Aes128>::new_from_slice(key).expect("Invalid key length");
+    let key = GenericArray::from_slice(key);
+    let mut cmac = Cmac::<Aes128>::new(key);
     cmac.update(data);
     cmac.finalize()
 }
 
+fn cmac_verify(key: &[u8; KEY_SIZE], data: &[u8], tag: &[u8; TAG_SIZE]) -> bool {
+    let key = GenericArray::from_slice(key);
+    let mut cmac = Cmac::<Aes128>::new(key);
+    cmac.update(data);
+    cmac.verify(tag.into()).is_ok()
+}
+
 fn ctr_encrypt(key: &[u8; KEY_SIZE], iv: &[u8; IV_SIZE], data: &mut [u8]) {
-    let mut cipher = Aes128Ctr64LE::new_from_slices(key, iv).expect("Invalid key or IV length");
+    let key = GenericArray::from_slice(key);
+    let iv = GenericArray::from_slice(iv);
+    let mut cipher = Aes128Ctr64LE::new(key, iv);
     let mut buffer = data.to_vec();
     cipher.apply_keystream(&mut buffer);
 }
@@ -63,8 +74,7 @@ fn main() {
             input_file
                 .read_to_end(&mut buffer)
                 .expect("Failed to read ciphertext");
-            let tag_verify = cmac_tag(&key, &buffer);
-            if tag.to_vec() != tag_verify.into_bytes().to_vec() {
+            if !cmac_verify(&key, &buffer, &tag) {
                 eprintln!("Tag verification failed. Data may be tampered.");
                 std::process::exit(1);
             }
